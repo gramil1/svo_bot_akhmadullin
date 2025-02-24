@@ -7,11 +7,11 @@ import requests
 
 bot = telebot.TeleBot('Ваш токен')
 
-# Инициализация базы данных
+
 conn = sqlite3.connect('baza_na_remont.db', check_same_thread=False)
 cursor = conn.cursor()
 
-# Создание таблицы, если она не существует
+
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,11 +24,11 @@ cursor.execute('''
 ''')
 conn.commit()
 
-# Состояния для обработки запросов
+
 user_states = {}
 USER_DATA = {}
 
-# Функция для обработки команды /start
+
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -40,7 +40,7 @@ def start(message):
 
     bot.send_message(message.chat.id, "Привет! Я бот для создания заявок на ремонт компьютеров.\nНажмите 'Заполнить заявку', чтобы начать.", reply_markup=markup)
 
-# Обработчик для кнопки "Заполнить заявку"
+
 @bot.message_handler(func=lambda message: message.text == "Заполнить заявку")
 def get_fio(message):
     user_id = message.from_user.id
@@ -86,7 +86,7 @@ def get_service_type(message):
 
     bot.send_message(message.chat.id, "Выберите элемент сервиса:", reply_markup=markup)
 
-# Получение элемента сервиса
+
 @bot.message_handler(func=lambda message: user_states.get(message.from_user.id) == 'waiting_for_service')
 def get_service_details(message):
     user_id = message.from_user.id
@@ -118,13 +118,13 @@ def get_service_details(message):
         bot.send_message(message.chat.id, "Некорректный выбор элемента сервиса.")
         user_states[user_id] = None
 
-# Получение деталей сервиса (для "Компьютер/ноутбук" и "Программное обеспечение")
+
 @bot.message_handler(func=lambda message: user_states.get(message.from_user.id) == 'waiting_for_service_details')
 def save_request(message):
     user_id = message.from_user.id
     USER_DATA[user_id]['service_details'] = message.text
 
-    # Сохранение в базу данных
+    
     fio = USER_DATA[user_id]['fio']
     phone = USER_DATA[user_id]['phone']
     email = USER_DATA[user_id]['email']
@@ -144,13 +144,13 @@ def save_request(message):
     markup = types.ReplyKeyboardRemove()
     bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
 
-# Получение описания проблемы с периферийным устройством
+
 @bot.message_handler(func=lambda message: user_states.get(message.from_user.id) == 'waiting_for_peripheral_description')
 def save_request_peripheral(message):
     user_id = message.from_user.id
     USER_DATA[user_id]['service_details'] = message.text
 
-    # Сохранение в базу данных
+  
     fio = USER_DATA[user_id]['fio']
     phone = USER_DATA[user_id]['phone']
     email = USER_DATA[user_id]['email']
@@ -170,7 +170,7 @@ def save_request_peripheral(message):
     markup = types.ReplyKeyboardRemove()
     bot.send_message(message.chat.id, "Что-нибудь еще?", reply_markup=markup)
 
-# Обработчик для любого другого текста
+
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     bot.reply_to(message, "Я не понимаю эту команду. Пожалуйста, используйте /start или кнопку 'Заполнить заявку'.")
@@ -180,4 +180,4 @@ if __name__ == '__main__':
     try:
         bot.polling(none_stop=True)
     finally:
-        conn.close() # Закрываем соединение с базой данных после остановки бота
+        conn.close() 
